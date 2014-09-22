@@ -73,7 +73,6 @@ public class UsersService //implements IUsersService
 	}
 
 	@POST
-	@JSONP
 	@Produces("application/xml")
 	//@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.TEXT_PLAIN)
