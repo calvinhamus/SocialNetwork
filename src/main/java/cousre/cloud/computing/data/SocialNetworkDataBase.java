@@ -1,7 +1,6 @@
 package cousre.cloud.computing.data;
 
 
-import java.beans.Statement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -12,6 +11,10 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import course.cloud.computing.classes.Tweet;
+import course.cloud.computing.classes.User;
+import course.cloud.computing.classes.Users;
 
 
 public class SocialNetworkDataBase 
@@ -77,11 +80,13 @@ public class SocialNetworkDataBase
 					generateUserFollowingTable();
 			if (!getDBTables(conn).contains("tweets"))
 					generateTweetTable();
-			if (!getDBTables(conn).contains("usertweets"))
-					generateUserTweetsTable();
-			
+			//if (!getDBTables(conn).contains("usertweets"))
+					//generateUserTweetsTable();
+			if (!getDBTables(conn).contains("userfriends"))
+					generateFriendsTable();
 		}
 	}
+	/****************************************************************User Section******************************************/
 	public int insertUser(String userName,String email, String password) throws SQLException {
 		PreparedStatement statement = null;
 		if(getUserByName(userName) == 0)
@@ -147,6 +152,286 @@ public class SocialNetworkDataBase
 		}
 		return count;
 	}
+	/**************************************************************** End User Section******************************************/
+	/****************************************************  Followers and Following Section******************************************/
+	public Users getPendingFriend(int userId) throws SQLException
+	{
+		Users users = new Users();
+		PreparedStatement lookup = null;
+		if (lookup == null) {
+			lookup = conn
+					.prepareStatement("SELECT userId FROM pending WHERE friendId = ?");
+		}
+		lookup.setInt(1, userId);
+		ResultSet set = lookup.executeQuery();
+		if (set.next()) {
+			User tempUser = new User();
+			tempUser.setId(set.getInt(1));
+			users.addUser(tempUser);
+		}
+		return users;
+	}
+	public Users getPendingFollow(int userId) throws SQLException
+	{
+		Users users = new Users();
+		PreparedStatement lookup = null;
+		if (lookup == null) {
+			lookup = conn
+					.prepareStatement("SELECT userId FROM pending WHERE friendId  = ?");
+		}
+		lookup.setInt(1, userId);
+		ResultSet set = lookup.executeQuery();
+		if (set.next()) {
+			User tempUser = new User();
+			tempUser.setId(set.getInt(1));
+			users.addUser(tempUser);
+		}
+		return users;
+	}
+	public User checkFriendShip(int userId,int friendId) throws SQLException
+	{
+		User user = new User();
+		if(checkCurrentRelationship(userId, friendId) !=403)
+		{
+			if(checkPendingRelationship(userId, friendId) == 1 )
+			{
+				createFriendship(userId,friendId);
+				user.setMessage("Success");
+			}else
+			{
+				if(checkIfPendingExists(userId,friendId) == 0){
+					createPending(userId,friendId);		
+				}
+				user.setMessage("User Request Pending");
+			}
+		}else
+		{
+			user.setMessage("HTTP403");
+		}
+		return user;
+	}
+	private int checkIfPendingExists(int userId, int friendId) throws SQLException {
+		// TODO Auto-generated method stub
+		PreparedStatement lookup = null;
+		if (lookup == null) {
+			lookup = conn
+					.prepareStatement("SELECT id FROM pending WHERE userId = ? AND friendId  = ?");
+		}
+		lookup.setInt(1, userId);
+		lookup.setInt(2, friendId);
+		ResultSet set = lookup.executeQuery();
+		if (set.next()) {
+				return 1;
+		}
+		return 0;
+	}
+
+	private int createPending(int userId, int friendId) throws SQLException 
+	{
+		PreparedStatement statement = null;
+		if (statement == null) {
+			statement = conn
+					.prepareStatement("INSERT INTO pending(userId,friendId) VALUES(?, ?)",PreparedStatement.RETURN_GENERATED_KEYS);
+		}
+		statement.setInt(1, userId);
+		statement.setInt(2, friendId);
+		statement.execute();
+		ResultSet set = statement.getGeneratedKeys();
+		if (set.next()){ 
+			return set.getInt(1);
+		}
+		return 0;
+	}
+
+	private int createFriendship(int userId, int friendId) throws SQLException 
+	{
+		
+		PreparedStatement statement = null;
+			if (statement == null) {
+				statement = conn
+						.prepareStatement("INSERT INTO userFriends(userId,friendId) VALUES(?, ?)",PreparedStatement.RETURN_GENERATED_KEYS);
+			}
+			statement.setInt(1, userId);
+			statement.setInt(2, friendId);
+			statement.execute();
+			ResultSet set = statement.getGeneratedKeys();
+			if (set.next()){ 
+				return set.getInt(1);
+			}
+			return 0;
+		//return user;
+	}
+	public int followUser(int userId, int followingId) throws SQLException 
+	{
+		if(!checkFollowingStatus(userId,followingId))
+		{
+			PreparedStatement statement = null;
+			if (statement == null) {
+				statement = conn
+						.prepareStatement("INSERT INTO userFollowing(userId,followeringId) VALUES(?, ?)",PreparedStatement.RETURN_GENERATED_KEYS);
+			}
+			statement.setInt(1, userId);
+			statement.setInt(2, followingId);
+			statement.execute();
+			ResultSet set = statement.getGeneratedKeys();
+			if (set.next()){ 
+				return followingId;
+			}			
+		}
+			return 0;
+		
+		//return user;
+	}
+	private boolean checkFollowingStatus(int userId, int followingId) throws SQLException {
+		PreparedStatement lookup = null;
+		if (lookup == null) {
+			lookup = conn
+					.prepareStatement("SELECT followeringId FROM userfollowing WHERE userId = ?");
+		}
+		lookup.setInt(1, userId);
+		ResultSet set = lookup.executeQuery();
+		if (set.next()) {
+			return true;
+		}
+		return false;
+	}
+
+	public int unfollowUser(int userId, int followingId) throws SQLException
+	{
+		PreparedStatement lookup = null;
+		if (lookup == null) {
+			lookup = conn
+					.prepareStatement("DELETE FROM userfollowing WHERE userId = ? AND followeringId = ?");
+		}
+		lookup.setInt(1, userId);
+		lookup.setInt(2, followingId);
+		if(lookup.executeUpdate()>0)
+		{
+			return followingId;
+		}
+			
+		//lookup.executeQuery();		
+		return 0;
+	}
+	public Users getFollowing(int userId) throws SQLException
+	{
+		Users users = new Users();
+		PreparedStatement lookup = null;
+		if (lookup == null) {
+			lookup = conn
+					.prepareStatement("SELECT followeringId FROM userfollowing WHERE userId = ?");
+		}
+		lookup.setInt(1, userId);
+		ResultSet set = lookup.executeQuery();
+		if (set.next()) {
+			User tempUser = new User();
+			tempUser.setId(set.getInt(1));
+			users.addUser(tempUser);
+		}
+		return users;
+	}
+	public Users getFollowers(int userId) throws SQLException
+	{
+		Users users = new Users();
+		PreparedStatement lookup = null;
+		if (lookup == null) {
+			lookup = conn
+					.prepareStatement("SELECT followerId FROM userfollowers WHERE userId = ?");
+		}
+		lookup.setInt(1, userId);
+		ResultSet set = lookup.executeQuery();
+		if (set.next()) {
+			User tempUser = new User();
+			tempUser.setId(set.getInt(1));
+			users.addUser(tempUser);
+		}
+		return users;
+	}
+	/**********Tweet funcitons ************/
+	public int createNewTweet(int userId, String msg) throws SQLException
+	{
+		PreparedStatement statement = null;
+		if (statement == null) {
+			statement = conn
+					.prepareStatement("INSERT INTO tweets(userId,text) VALUES(?, ?)",PreparedStatement.RETURN_GENERATED_KEYS);
+		}
+		statement.setInt(1, userId);
+		statement.setString(2, msg);
+		statement.execute();
+		ResultSet set = statement.getGeneratedKeys();
+		if (set.next()){
+			
+			return set.getInt(1);
+		}
+		return 0;
+	}
+	public Tweet getTweetById(int tweetId) throws SQLException
+	{
+		Tweet tweet = new Tweet();
+		PreparedStatement lookup = null;
+		if (lookup == null) {
+			lookup = conn
+					.prepareStatement("SELECT * FROM tweets WHERE id = ?");
+		}
+		lookup.setInt(1, tweetId);
+		ResultSet set = lookup.executeQuery();
+		if (set.next()) {
+			
+			tweet.setMessage(set.getString("text"));
+			tweet.setId(set.getInt("id"));
+				return tweet;
+		}
+		return tweet;
+	}
+	public int removeTweet(int userId, int tweetId) throws SQLException
+	{
+		PreparedStatement lookup = null;
+		if (lookup == null) {
+			lookup = conn
+					.prepareStatement("DELETE FROM tweets WHERE userId = ? AND id = ?");
+		}
+		lookup.setInt(1, userId);
+		lookup.setInt(2, tweetId);
+		if(lookup.executeUpdate() >0)
+			return 1;
+		//lookup.executeQuery();		
+		return 0;
+	}
+	/**********End Tweet funcitons************/
+	/*************************Helper functions ***************************************************************/
+	private int checkPendingRelationship(int userId,int friendId) throws SQLException
+	{
+		PreparedStatement lookup = null;
+		if (lookup == null) {
+			lookup = conn
+					.prepareStatement("SELECT userId FROM pending WHERE friendId  = ?");
+		}
+		lookup.setInt(1, userId);
+		ResultSet set = lookup.executeQuery();
+		if (set.next()) {
+			if(friendId == set.getInt(1))
+				return 1;
+		}
+		return 0;
+	}
+	private int checkCurrentRelationship(int userId, int friendId) throws SQLException
+	{
+		PreparedStatement lookup = null;
+		if (lookup == null) {
+			lookup = conn
+					.prepareStatement("SELECT id FROM userfollowers WHERE userId  = ? "
+							+ "and friendId = ? ");
+		}
+		lookup.setInt(1, userId);
+		lookup.setInt(2, friendId);
+		ResultSet set = lookup.executeQuery();
+		if (set.next()) {
+			return 403;
+		}
+		return 0;
+	}
+	/************************* End Helper functions ***************************************************************/
+	/*********************************************************End Followers and Following Section******************************************/
 	private void generateUserTable() throws SQLException 
 	{
 		//User Table
@@ -167,6 +452,7 @@ public class SocialNetworkDataBase
 		}
 		
 	}
+	/******V2********/
 	private void generateUserTweetsTable() throws SQLException {
 		boolean results = conn
 				.createStatement()
@@ -186,16 +472,18 @@ public class SocialNetworkDataBase
 		}
 		
 	}
-
+/*********V2***********/
 	private void generateTweetTable() throws SQLException {
 		boolean results = conn
 				.createStatement()
 				.execute(
 						"Create table tweets"
-						+ "(id INT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1)" //Tweets Tab
+						+ "(id INT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1)"
+						+ ",userId INT" //Tweets Tab
 						+ ", text VARCHAR(128)"
 						+ ", date TIMESTAMP"
-						+ ",PRIMARY KEY (id))");
+						+ ",PRIMARY KEY (id)"
+						+ ", FOREIGN KEY (userId) REFERENCES users)");
 
 		if (results) {
 			System.out
@@ -238,18 +526,34 @@ public class SocialNetworkDataBase
 					.println("UserFollowers Tables were created");
 		}
 	}
-
 	private void generatePendingTable() throws SQLException {
 		boolean results = conn
 				.createStatement()
 				.execute(
 						 " Create table pending "
 						+ "(id INT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1)" //Pending Table
-						+ ", incomingUserId INT"
-						+ ", outGoingUserId INT"
+						+ ", userId INT"
+						+ ", friendId INT"
 						+ ", PRIMARY KEY (id)"
-						+ ", FOREIGN KEY (incomingUserId) REFERENCES users"
-						+ ", FOREIGN KEY (outGoingUserId) REFERENCES users)");
+						+ ", FOREIGN KEY (userId) REFERENCES users"
+						+ ", FOREIGN KEY (friendId) REFERENCES users)");
+
+		if (results) {
+			System.out
+					.println("Pending Table were created");
+		}
+	}
+	private void generateFriendsTable() throws SQLException {
+		boolean results = conn
+				.createStatement()
+				.execute(
+						 " Create table userFriends "
+						+ "(id INT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1)" //Pending Table
+						+ ", userId INT"
+						+ ", friendId INT"
+						+ ", PRIMARY KEY (id)"
+						+ ", FOREIGN KEY (userId) REFERENCES users"
+						+ ", FOREIGN KEY (friendId) REFERENCES users)");
 
 		if (results) {
 			System.out
