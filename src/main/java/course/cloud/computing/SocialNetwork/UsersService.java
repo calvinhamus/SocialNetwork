@@ -14,8 +14,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import course.cloud.computing.classes.User;
 
+import org.glassfish.jersey.server.JSONP;
+
+import course.cloud.computing.classes.User;
 import cousre.cloud.computing.data.SocialNetworkDataBase;
 
 @Path("/users")
@@ -71,6 +73,7 @@ public class UsersService //implements IUsersService
 	}
 
 	@POST
+	@JSONP
 	@Produces("application/xml")
 	//@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.TEXT_PLAIN)

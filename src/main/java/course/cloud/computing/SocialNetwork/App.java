@@ -61,12 +61,4 @@ public class App
 //	     
 //	     return GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), rc);   
 //	 }
-	 private static void testService(SocialNetworkDataBase db) throws SQLException
-	 {
-		 //int success = db.getUserByName("Calvin02");
-		 //int success = db.getUserById(10);
-		// long success = db.getUsers();
-		 int success =  db.insertUser("Calvin9", "a@a.com", "password");
-		 System.out.print("Insert success" + success);
-	 }
 }

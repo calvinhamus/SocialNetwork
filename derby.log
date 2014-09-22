@@ -1,11 +1,11 @@
 ----------------------------------------------------------------
-Sun Sep 21 21:51:07 MDT 2014:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.11.1.1 - (1616546): instance a816c00e-0148-9b7b-fc56-00000f8051e0 
-on database directory E:\workspace\SocialNetwork\socialNetowrkDB with class loader sun.misc.Launcher$AppClassLoader@58644d46 
-Loaded from file:/C:/Users/Calvin/.m2/repository/org/apache/derby/derby/10.11.1.1/derby-10.11.1.1.jar
+Mon Sep 22 12:25:49 MDT 2014:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.11.1.1 - (1616546): instance a816c00e-0148-9e9c-cb8b-00000e352a30 
+on database directory C:\Users\calvinhamus\Documents\GitHub\SocialNetwork\socialNetowrkDB with class loader sun.misc.Launcher$AppClassLoader@58644d46 
+Loaded from file:/C:/Users/calvinhamus/.m2/repository/org/apache/derby/derby/10.11.1.1/derby-10.11.1.1.jar
 java.vendor=Oracle Corporation
-java.runtime.version=1.8.0-b132
-user.dir=E:\workspace\SocialNetwork
+java.runtime.version=1.8.0_20-b26
+user.dir=C:\Users\calvinhamus\Documents\GitHub\SocialNetwork
 os.name=Windows 7
 os.arch=amd64
 os.version=6.1
