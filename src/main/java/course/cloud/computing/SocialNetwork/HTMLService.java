@@ -12,7 +12,8 @@ package course.cloud.computing.SocialNetwork;
 		@Produces(MediaType.TEXT_HTML)
 		@Path("login")
 		public String getDivContents(){
-			return "<button type='button' name='tracker-button' onclick='reportClick()'> Like! </button>";
+			return "<button type='button' name='tracker-button' onclick='reportClick()'> Boo! </button>"
+					+ "<button type='button' name='tracker-button' onclick='reportClick()'> Dislike! </button>";
 		}
 
 	}

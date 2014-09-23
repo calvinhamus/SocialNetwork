@@ -15,7 +15,7 @@ import javax.ws.rs.core.Response.Status;
 
 import course.cloud.computing.classes.Tweet;
 import course.cloud.computing.classes.Users;
-import cousre.cloud.computing.data.SocialNetworkDataBase;
+import course.cloud.computing.data.SocialNetworkDataBase;
 
 @Path("/tweet")
 public class TweetService 
@@ -28,7 +28,7 @@ SocialNetworkDataBase db = SocialNetworkDataBase.getDatabase();
 	public Response sendTweet(@Context HttpServletRequest req,@PathParam("msg") String msg)
 	{
 		if(msg.length() > 128)
-			return Response.status(Status.FORBIDDEN).build();//TODO FINSIH this
+			return Response.status(Status.FORBIDDEN).header("Access-Control-Allow-Origin", "*").build();//TODO FINSIH this
 		HttpSession session = req.getSession();
 		Tweet tweet = new Tweet();
 		int id = (int) session.getAttribute("userid");
@@ -43,7 +43,7 @@ SocialNetworkDataBase db = SocialNetworkDataBase.getDatabase();
 			e.printStackTrace();
 		}
 		// TODO Auto-generated method stub
-		return Response.status(201).entity(tweet).build();
+		return Response.status(201).header("Access-Control-Allow-Origin", "*").entity(tweet).build();
 	}
 	@GET
 	@Produces("application/xml")
@@ -58,7 +58,7 @@ SocialNetworkDataBase db = SocialNetworkDataBase.getDatabase();
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return Response.status(Status.NOT_FOUND).build();
+		return Response.status(Status.NOT_FOUND).header("Access-Control-Allow-Origin", "*").build();
 	}
 	@POST
 	@Produces("application/xml")
@@ -71,13 +71,13 @@ SocialNetworkDataBase db = SocialNetworkDataBase.getDatabase();
 		try {
 			//Update to handle sessions
 			if(db.removeTweet(id, tweetId) !=0);
-				return Response.status(201).entity("Destroyed").build();//TODO add success parameters
+				return Response.status(201).header("Access-Control-Allow-Origin", "*").entity("Destroyed").build();//TODO add success parameters
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		// TODO Auto-generated method stub
-		return Response.status(201).entity(users).build();
+		return Response.status(201).header("Access-Control-Allow-Origin", "*").entity(users).build();
 	}
 	@POST
 	@Produces("application/xml")
@@ -97,6 +97,6 @@ SocialNetworkDataBase db = SocialNetworkDataBase.getDatabase();
 			e.printStackTrace();
 		}
 		// TODO Auto-generated method stub
-		return Response.status(201).entity(tweet).build();
+		return Response.status(201).header("Access-Control-Allow-Origin", "*").entity(tweet).build();
 	}
 }

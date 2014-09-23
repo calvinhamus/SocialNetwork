@@ -8,7 +8,7 @@ import java.util.Map;
 import com.sun.grizzly.http.SelectorThread;
 import com.sun.jersey.api.container.grizzly.GrizzlyWebContainerFactory;
 
-import cousre.cloud.computing.data.SocialNetworkDataBase;
+import course.cloud.computing.data.SocialNetworkDataBase;
 
 public class App 
 {

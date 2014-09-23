@@ -20,4 +20,15 @@ public class Users
 	{
 		userList.add(user);
 	}
+	@Override
+	public String toString() {
+		String beg = "Users :[";
+		String middle = "";
+		String end = "]";
+		for (User user : userList) 
+		{
+			middle = middle + user.toString();
+		}
+		return beg + middle + end;
+	}
 }
