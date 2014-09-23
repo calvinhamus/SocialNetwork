@@ -21,8 +21,7 @@ public class SocialNetworkDataBase
 {
 	private static AtomicBoolean init = new AtomicBoolean(false);
 	private static Connection conn = null;
-	//private PreparedStatement statement = null;
-	//private PreparedStatement lookup;
+
 
 	private Set<String> getDBTables(Connection targetDBConn)
 			throws SQLException 
